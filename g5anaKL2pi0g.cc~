@@ -1,0 +1,90 @@
+#include <iostream>
+#include <cstdlib>
+#include <string>
+
+#include "TObject.h"
+#include "TChain.h"
+#include "TFile.h"
+#include "TTree.h"
+
+#include "g5anaKL2pi0g/DataContainer.h"
+#include "gamma/GammaFinder.h"
+
+std::list<Gamma> user_trig(std::list<Gamma> const &glist0, const Int_t userflag, const bool isMC );
+
+int main( int argc, char** argv)
+{
+  // read argument
+  if( argc!=4 ){
+    std::cout<<" arg err : " << argv[0] << " (input) (output) (userflag)" << std::endl;
+    return -1;
+  }
+
+  const std::string ifname = argv[1];
+  const std::string ofname = argv[2];
+  const Int_t     userflag = std::atoi(argv[3]);
+
+  std::cout<<" input    : " << ifname << std::endl;
+  std::cout<<" output   : " << ofname << std::endl;
+  std::cout<<" userflag : " << userflag << std::endl;
+
+  /// read input ///
+  TChain *itree = new TChain("clusteringTree");
+  itree->Add( ifname.c_str() );
+  const Long64_t nentry = itree->GetEntries();
+  std::cout<<" #entry = " << nentry << std::endl;
+  if( nentry==0 ){
+    return -1;
+  }
+
+  DataContainer data;
+  data.SetBranchAddresses(itree);
+
+  /// prepare output ///
+  TFile *ofile = new TFile( ofname.c_str(), "RECREATE");
+  TTree *otree = new TTree("RecTree","output from g5anaKL2pi0g");
+  data.AddBranches(otree);
+
+  /// loop ///
+  GammaFinder gFinder;
+
+
+  //for( Long64_t ientry=0; ientry<nentry; ++ientry )
+  for( Long64_t ientry=0; ientry<1; ++ientry )
+  {
+
+/*
+    if( nentry>100 && (ientry%(nentry/10)==0) )
+      std::cout<<" " << 10*ientry/(nentry/10) << "%" << std::endl;
+*/
+/*
+    itree->GetEntry(ientry);
+
+    /// pre-selection ///
+    if( data.IsRealData() && !data.IsGoodQuality() ) continue;
+
+    /// load clustering info ///
+    std::list<Cluster> clist;
+    data.GetData(clist);
+
+    std::list<Gamma> glist0;
+    gFinder.findGamma(clist, glist0);
+
+    /// Jay's trigger timing requirement ///
+    std::list<Gamma> glist = user_trig(glist0, userflag, !data.IsRealData() );
+    //std::cout << glist.size() << std::endl;
+    if( glist.size()!=4 ) continue;
+
+    //otree->Fill();
+*/
+  }//end of event loop
+
+  // END
+  ofile->cd();
+  otree->Write();
+  ofile->Close();
+
+  std::cout<<" END of KL2pi0g analysis. " << std::endl;
+  return 1;
+
+}
