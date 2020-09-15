@@ -90,6 +90,12 @@ class E14GNAnaDataContainer{
   Int_t      CutCondition;
   Int_t      VetoCondition;
 
+  Double_t        MinGammaE;
+  Double_t        MinFiducialXY;
+  Double_t        MaxFiducialR;
+  Double_t        MinClusterDistance;
+  Double_t        MaxDeltaVertexTime;
+
   // data container for Cluster, Pi0, Klong
   Int_t           ClusterNumber;
   Int_t           ClusterId[s_arrSize];   //[ClusterNumber]

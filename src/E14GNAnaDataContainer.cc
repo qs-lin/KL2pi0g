@@ -174,6 +174,12 @@ void E14GNAnaDataContainer::branchOfClass(TTree *tree,int mode){
     tree->Branch("KlongCoe",KlongCoe,"KlongCoe[KlongNumber][3]/D"); 
     tree->Branch("KlongTime",KlongTime,"KlongTime[KlongNumber]/D");
     tree->Branch("KlongCsiTime",KlongCsiTime,"KlongCsiTime[KlongNumber]/D");
+
+    tree->Branch("MinGammaE",&MinGammaE,"MinGammaE/D");
+    tree->Branch("MinFiducialXY",&MinFiducialXY,"MinFiducialXY/D");
+    tree->Branch("MaxFiducialR",&MaxFiducialR,"MaxFiducialR/D");
+    tree->Branch("MinClusterDistance",&MinClusterDistance,"MinClusterDistance/D");
+    tree->Branch("MaxDeltaVertexTime",&MaxDeltaVertexTime,"MaxDeltaVertexTime/D");
   }
 }
 
@@ -275,6 +281,7 @@ void E14GNAnaDataContainer::setBranchAddress(TTree *tree){
 
 void E14GNAnaDataContainer::reset(){
   OrigEventID = CutCondition = VetoCondition = 0;
+  MinGammaE = MinFiducialXY =  MaxFiducialR = MinClusterDistance = MaxDeltaVertexTime = 0.;
   resetClassNumber();
   resetClusterNumber();
   resetDigiNumber();
@@ -935,6 +942,7 @@ void  E14GNAnaDataContainer::initAll(){
   
   eventID =  OrigEventID = 0;
   CutCondition =  VetoCondition = 0;
+  MinGammaE = MinFiducialXY =  MaxFiducialR = MinClusterDistance = MaxDeltaVertexTime = 0.;
   KlongNumber = Pi0Number = GammaNumber = ClusterNumber = 0;
   VetoNumber = CsiNumber = 0;
   

@@ -12,14 +12,17 @@
 
 //#include "g5anaKL2pi0g/DataContainer.h"
 #include "g5anaKL2pi0g/E14GNAnaDataContainer.h"
+#include "g5anaKL2pi0g/Veto.h"
 #include "g5anaKL2pi0g/KL2pi0g.h"
 #include "g5anaKL2pi0g/RecKL2pi0g.h"
 #include "gamma/GammaFinder.h"
 #include "gamma/Gamma.h"
 
+void user_veto(std::vector<Veto*> &vetovec, const Int_t userflag );
 std::list<Gamma> user_trig(std::list<Gamma> const &glist0, const Int_t userflag, const bool isMC );
 std::list<Gamma> user_trig_e14(std::list<Gamma> const &glist0);
 bool user_rec(std::list<Gamma> const &glist, std::vector<KL2pi0g> &klvec, Int_t userflag);
+void user_cut( E14GNAnaDataContainer &data, std::vector<KL2pi0g> const &klvec, std::vector<Veto*> const &vetovec);
 
 int main( int argc, char** argv)
 {
@@ -50,17 +53,25 @@ int main( int argc, char** argv)
   E14GNAnaDataContainer data;
   data.setBranchAddress(itree);
 
-  /// prepare output ///
-
   TFile *ofile = new TFile( ofname.c_str(), "RECREATE");
   TTree *otree = new TTree("RecTree","output from g5anaKL2pi0g");
   //data.AddBranches(otree);
   data.branchOfKlong(otree);
 
+  std::vector<Veto*> vetovec;
+  user_veto(vetovec, userflag);  
+  for(std::vector<Veto*>::iterator iv=vetovec.begin(); iv!=vetovec.end(); ++iv )
+  {
+     (*iv)->SetBranchAddresses(itree);
+     (*iv)->AddBranches(otree);
+  }
+  /// prepare output ///
+
+
   /// loop ///
   GammaFinder gFinder;
 
-  std::ofstream ofiletxt("data.txt",std::ofstream::app);
+  //std::ofstream ofiletxt("data.txt",std::ofstream::app);
 
   //for( Long64_t ientry=0; ientry<100; ++ientry )
   //for( Long64_t ientry=0; ientry<1000; ++ientry )
@@ -96,31 +107,34 @@ int main( int argc, char** argv)
     std::vector<KL2pi0g> klvec;
     if( !user_rec(glist,klvec,userflag) ) continue;
 
+    /// veto analysis ///
+    for(std::vector<Veto*>::iterator iv=vetovec.begin(); iv!=vetovec.end(); ++iv )
+       (*iv)->UpdateVars(klvec[0]);
+
+    user_cut(data,klvec,vetovec);
+
+    if(data.CutCondition!=0) continue;
+    data.setData(klvec);
+    //std::cout << data.KlongNumber << "  " << klvec.size() << std::endl; 
 
     //for testing purpose only. Check setData and getData for KL2pi0g
-
-    //std::cout << ientry << std::endl;
-    //std::cout << klvec.size() << std::endl;
-
-    data.setData(klvec);
+/*
     for(int i=0; i<data.KlongNumber; ++i){
       ofiletxt << klvec[i] << std::endl;
     }
-
-    //std::cout << data.KlongNumber << "  " << klvec.size() << std::endl; 
+*/
     otree->Fill();
-
 
   }//end of event loop
 
   // END
   
-  ofiletxt.close();
+  //ofiletxt.close();
   ofile->cd();
   otree->Write();
   ofile->Close();
 
   std::cout<<" END of KL2pi0g analysis. " << std::endl;
-  return 1;
+  return 0;
 
 }
